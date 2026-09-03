@@ -50,19 +50,39 @@
   .empty, .placeholder { padding: 16px; color: var(--muted); text-align: center; }
   .placeholder { border: 1px dashed var(--border); border-radius: 8px; font-size: 14px; }
   .page-footer { margin-top: 24px; padding-top: 12px; border-top: 1px solid var(--border); color: var(--muted); font-size: 12px; }
+  .page-nav { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-bottom: 16px; font-size: 13px; }
+  .page-nav a { text-decoration: none; }
+  .page-nav a:hover { text-decoration: underline; }
+  .chip-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px;
+  }
+  .chip {
+    display: block; border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px;
+    color: inherit; text-decoration: none; background: var(--stripe);
+  }
+  .chip:hover { border-color: var(--accent); }
+  .chip-status { color: var(--muted); font-size: 12px; margin-bottom: 8px; }
+  .chip-team { display: flex; align-items: center; gap: 8px; padding: 2px 0; }
+  .chip-team + .chip-team { border-top: 1px solid var(--border); margin-top: 6px; padding-top: 8px; }
+  .chip-logo { width: 24px; height: 24px; object-fit: contain; flex: none; }
+  .chip-name { flex: 1; font-size: 14px; }
+  .chip-rank { color: var(--muted); font-size: 12px; margin-right: 2px; }
+  .chip-record { color: var(--muted); font-size: 12px; white-space: nowrap; }
+  .chip-score { font-variant-numeric: tabular-nums; font-weight: 600; margin-left: 8px; }
 </style>
 </head>
 <body>
+
 <h1>Apollo — Weekly Predictions</h1>
 <p class="caption">Pregame predictions and results, published by Apollo.</p>
 <div class="table-wrap">
 <table>
 <thead><tr><th>Season</th><th>Week</th><th>Reports</th></tr></thead>
 <tbody>
-<tr><td>2026</td><td>Week 1</td><td><a href="2026/week1/predictions.html">Predictions</a> · <a href="2026/week1/results.html">Results</a> · <a href="2026/week1/bets.html">Bets</a> · <a href="2026/week1/board.html">Board</a> · <a href="2026/week1/injuries.html">Injuries</a> · <a href="2026/week1/key-players.html">Key Players</a></td></tr>
+<tr><td>2026</td><td>Week 1</td><td><a href="2026/week1/index.html">Home</a> · <a href="2026/week1/predictions.html">Predictions</a> · <a href="2026/week1/results.html">Results</a> · <a href="2026/week1/bets.html">Bets</a> · <a href="2026/week1/board.html">Board</a> · <a href="2026/week1/injuries.html">Injuries</a> · <a href="2026/week1/key-players.html">Key Players</a></td></tr>
 </tbody>
 </table>
 </div>
-<footer class="page-footer">Published 2026-09-02 09:49 CDT</footer>
+<footer class="page-footer">Published 2026-09-03 18:19 CDT</footer>
 </body>
 </html>
