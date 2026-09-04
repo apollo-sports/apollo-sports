@@ -69,6 +69,21 @@
   .chip-rank { color: var(--muted); font-size: 12px; margin-right: 2px; }
   .chip-record { color: var(--muted); font-size: 12px; white-space: nowrap; }
   .chip-score { font-variant-numeric: tabular-nums; font-weight: 600; margin-left: 8px; }
+  .matchup-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 20px; }
+  .team-card { border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; background: var(--stripe); }
+  .team-card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .team-card-logo { width: 32px; height: 32px; object-fit: contain; flex: none; }
+  .team-card-name { font-size: 16px; font-weight: 700; }
+  .team-card-record { color: var(--muted); font-size: 13px; margin-left: auto; white-space: nowrap; }
+  .stat-row { display: flex; justify-content: space-between; gap: 10px; padding: 4px 0; font-size: 13px; }
+  .stat-row + .stat-row { border-top: 1px solid var(--border); }
+  .stat-label { color: var(--muted); }
+  .stat-value { font-variant-numeric: tabular-nums; font-weight: 600; text-align: right; }
+  .section-title {
+    font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); margin: 4px 0 10px;
+  }
+  .compare-table th, .compare-table td { text-align: right; }
+  .compare-table th:first-child, .compare-table td:first-child { text-align: left; }
 </style>
 </head>
 <body>
@@ -136,6 +151,6 @@
   if (conferenceFilter) { conferenceFilter.addEventListener("change", applyFilters); }
 })();
 </script>
-<footer class="page-footer">Published 2026-09-04 08:51 CDT</footer>
+<footer class="page-footer">Published 2026-09-04 11:30 CDT</footer>
 </body>
 </html>
