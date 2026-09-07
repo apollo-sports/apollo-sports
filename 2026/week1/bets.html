@@ -84,6 +84,17 @@
   }
   .compare-table th, .compare-table td { text-align: right; }
   .compare-table th:first-child, .compare-table td:first-child { text-align: left; }
+  .box-score { border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; margin-bottom: 20px; }
+  .box-score-teams { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .box-score-logo { width: 26px; height: 26px; object-fit: contain; }
+  .box-row {
+    display: grid; grid-template-columns: 1fr auto 1fr; gap: 10px; padding: 5px 0;
+    font-size: 13px; align-items: baseline;
+  }
+  .box-row + .box-row { border-top: 1px solid var(--border); }
+  .box-value-home { text-align: left; font-variant-numeric: tabular-nums; font-weight: 600; }
+  .box-value-away { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+  .box-label { text-align: center; color: var(--muted); white-space: nowrap; }
 </style>
 </head>
 <body>
@@ -151,6 +162,6 @@
   if (conferenceFilter) { conferenceFilter.addEventListener("change", applyFilters); }
 })();
 </script>
-<footer class="page-footer">Published 2026-09-07 09:17 CDT</footer>
+<footer class="page-footer">Published 2026-09-07 11:13 CDT</footer>
 </body>
 </html>
