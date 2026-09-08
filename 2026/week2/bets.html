@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>2026 Week 2 — Top Bets</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #ffffff; --fg: #1a1a1a; --muted: #6b7280; --border: #e5e7eb;
+    --stripe: #f9fafb; --accent: #2563eb; --accent-bg: #eff6ff;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #111827; --fg: #e5e7eb; --muted: #9ca3af; --border: #374151;
+      --stripe: #1a2333; --accent: #60a5fa; --accent-bg: #1e293b;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 24px; background: var(--bg); color: var(--fg);
+    font: 15px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  h1 { font-size: 18px; margin: 0 0 4px; }
+  .caption { color: var(--muted); margin: 0 0 16px; font-size: 13px; }
+  a { color: var(--accent); }
+  .controls { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  input#search, select#conference-filter {
+    padding: 8px 10px;
+    border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--fg);
+    font-size: 14px;
+  }
+  input#search { width: 100%; max-width: 320px; }
+  select#conference-filter { max-width: 220px; }
+  .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 8px; }
+  table { border-collapse: collapse; width: 100%; min-width: 640px; }
+  th, td { padding: 8px 12px; text-align: left; white-space: nowrap; }
+  td { border-top: 1px solid var(--border); }
+  tbody tr:nth-child(even) { background: var(--stripe); }
+  tbody tr[hidden] { display: none; }
+  th {
+    position: sticky; top: 0; background: var(--accent-bg); color: var(--accent);
+    cursor: pointer; user-select: none; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  th:hover { text-decoration: underline; }
+  th.num { text-align: right; }
+  th::after { content: ""; margin-left: 4px; opacity: 0.5; }
+  th[data-sort-dir="asc"]::after { content: "▲"; opacity: 1; }
+  th[data-sort-dir="desc"]::after { content: "▼"; opacity: 1; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .empty, .placeholder { padding: 16px; color: var(--muted); text-align: center; }
+  .placeholder { border: 1px dashed var(--border); border-radius: 8px; font-size: 14px; }
+  .page-footer { margin-top: 24px; padding-top: 12px; border-top: 1px solid var(--border); color: var(--muted); font-size: 12px; }
+  .page-nav { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-bottom: 16px; font-size: 13px; }
+  .page-nav a { text-decoration: none; }
+  .page-nav a:hover { text-decoration: underline; }
+  .chip-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px;
+  }
+  .chip {
+    display: block; border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px;
+    color: inherit; text-decoration: none; background: var(--stripe);
+  }
+  .chip:hover { border-color: var(--accent); }
+  .chip-status { color: var(--muted); font-size: 12px; margin-bottom: 8px; }
+  .chip-team { display: flex; align-items: center; gap: 8px; padding: 2px 0; }
+  .chip-team + .chip-team { border-top: 1px solid var(--border); margin-top: 6px; padding-top: 8px; }
+  .chip-logo { width: 24px; height: 24px; object-fit: contain; flex: none; }
+  .chip-name { flex: 1; font-size: 14px; }
+  .chip-rank { color: var(--muted); font-size: 12px; margin-right: 2px; }
+  .chip-record { color: var(--muted); font-size: 12px; white-space: nowrap; }
+  .chip-score { font-variant-numeric: tabular-nums; font-weight: 600; margin-left: 8px; }
+  .matchup-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 20px; }
+  .team-card { border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; background: var(--stripe); }
+  .team-card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .team-card-logo { width: 32px; height: 32px; object-fit: contain; flex: none; }
+  .team-card-name { font-size: 16px; font-weight: 700; }
+  .team-card-record { color: var(--muted); font-size: 13px; margin-left: auto; white-space: nowrap; }
+  .stat-row { display: flex; justify-content: space-between; gap: 10px; padding: 4px 0; font-size: 13px; }
+  .stat-row + .stat-row { border-top: 1px solid var(--border); }
+  .stat-label { color: var(--muted); }
+  .stat-value { font-variant-numeric: tabular-nums; font-weight: 600; text-align: right; }
+  .section-title {
+    font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); margin: 4px 0 10px;
+  }
+  .compare-table th, .compare-table td { text-align: right; }
+  .compare-table th:first-child, .compare-table td:first-child { text-align: left; }
+  .box-score { border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; margin-bottom: 20px; }
+  .box-score-teams { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .box-score-logo { width: 26px; height: 26px; object-fit: contain; }
+  .box-row {
+    display: grid; grid-template-columns: 1fr auto 1fr; gap: 10px; padding: 5px 0;
+    font-size: 13px; align-items: baseline;
+  }
+  .box-row + .box-row { border-top: 1px solid var(--border); }
+  .box-value-home { text-align: left; font-variant-numeric: tabular-nums; font-weight: 600; }
+  .box-value-away { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+  .box-label { text-align: center; color: var(--muted); white-space: nowrap; }
+</style>
+</head>
+<body>
+
+<h1>2026 Week 2 — Top Bets</h1>
+<p class="caption">Generated by Apollo — 10 bets shown, ranked by edge.</p>
+<div class="controls">
+<input id="search" type="text" placeholder="Filter by team name…">
+
+</div>
+<div class="table-wrap">
+<table id="report-table">
+<thead><tr><th data-column="home_location">Home</th><th data-column="away_location">Away</th><th class="num" data-column="home_ap_rank">Home Rank</th><th class="num" data-column="away_ap_rank">Away Rank</th><th data-column="bet_type">Bet Type</th><th data-column="pick">Pick</th><th class="num" data-column="line">Line</th><th class="num" data-column="our_prob">Our Prob</th><th class="num" data-column="market_prob">Market Prob</th><th class="num" data-column="edge">Edge</th><th class="num" data-column="stake_fraction">Stake</th><th class="num" data-column="stake_dollars">Stake ($)</th><th data-column="status">Status</th></tr></thead>
+<tbody>
+<tr data-teams="minnesota mississippi state"><td data-sort="Minnesota">Minnesota</td><td data-sort="Mississippi State">Mississippi State</td><td class="num" data-sort="">—</td><td class="num" data-sort="">—</td><td data-sort="Moneyline">Moneyline</td><td data-sort="Minnesota">Minnesota</td><td class="num" data-sort="-1.000000">-1.0</td><td class="num" data-sort="0.620703">62%</td><td class="num" data-sort="0.017828">2%</td><td class="num" data-sort="0.602874">60%</td><td class="num" data-sort="0.018182">2%</td><td class="num" data-sort="">—</td><td data-sort="pending">?</td></tr><tr data-teams="oregon state texas tech"><td data-sort="Oregon State">Oregon State</td><td data-sort="Texas Tech">Texas Tech</td><td class="num" data-sort="">—</td><td class="num" data-sort="">—</td><td data-sort="Moneyline">Moneyline</td><td data-sort="Oregon State">Oregon State</td><td class="num" data-sort="1550.000000">1550.0</td><td class="num" data-sort="0.621750">62%</td><td class="num" data-sort="0.058276">6%</td><td class="num" data-sort="0.563474">56%</td><td class="num" data-sort="0.016364">2%</td><td class="num" data-sort="">—</td><td data-sort="pending">?</td></tr><tr data-teams="temple penn state"><td data-sort="Temple">Temple</td><td data-sort="Penn State">Penn State</td><td class="num" data-sort="">—</td><td class="num" data-sort="">—</td><td data-sort="Moneyline">Moneyline</td><td data-sort="Temple">Temple</td><td class="num" data-sort="1328.000000">1328.0</td><td class="num" data-sort="0.621750">62%</td><td class="num" data-sort="0.067414">7%</td><td class="num" data-sort="0.554336">55%</td><td class="num" data-sort="0.014545">1%</td><td class="num" data-sort="">—</td><td data-sort="pending">?</td></tr><tr data-teams="oklahoma state oregon"><td data-sort="Oklahoma State">Oklahoma State</td><td data-sort="Oregon">Oregon</td><td class="num" data-sort="">—</td><td class="num" data-sort="">—</td><td data-sort="Moneyline">Moneyline</td><td data-sort="Oklahoma State">Oklahoma State</td><td class="num" data-sort="1050.000000">1050.0</td><td class="num" data-sort="0.621750">62%</td><td class="num" data-sort="0.083665">8%</td><td class="num" data-sort="0.538084">54%</td><td class="num" data-sort="0.012727">1%</td><td class="num" data-sort="">—</td><td data-sort="pending">?</td></tr><tr data-teams="ole miss charlotte"><td data-sort="Ole Miss">Ole Miss</td><td data-sort="Charlotte">Charlotte</td><td class="num" data-sort="">—</td><td class="num" data-sort="">—</td><td data-sort="Spread">Spread</td><td data-sort="Charlotte">Charlotte</td><td class="num" data-sort="47.500000">47.5</td><td class="num" data-sort="0.983061">98%</td><td class="num" data-sort="0.500000">50%</td><td class="num" data-sort="0.483061">48%</td><td class="num" data-sort="0.010909">1%</td><td class="num" data-sort="">—</td><td data-sort="pending">?</td></tr><tr data-teams="notre dame rice"><td data-sort="Notre Dame">Notre Dame</td><td data-sort="Rice">Rice</td><td class="num" data-sort="">—</td><td class="num" data-sort="">—</td><td data-sort="Spread">Spread</td><td data-sort="Rice">Rice</td><td class="num" data-sort="44.500000">44.5</td><td class="num" data-sort="0.969261">97%</td><td class="num" data-sort="0.500000">50%</td><td class="num" data-sort="0.469261">47%</td><td class="num" data-sort="0.009091">1%</td><td class="num" data-sort="">—</td><td data-sort="pending">?</td></tr><tr data-teams="georgia western kentucky"><td data-sort="Georgia">Georgia</td><td data-sort="Western Kentucky">Western Kentucky</td><td class="num" data-sort="">—</td><td class="num" data-sort="">—</td><td data-sort="Spread">Spread</td><td data-sort="Western Kentucky">Western Kentucky</td><td class="num" data-sort="40.500000">40.5</td><td class="num" data-sort="0.965754">97%</td><td class="num" data-sort="0.500000">50%</td><td class="num" data-sort="0.465754">47%</td><td class="num" data-sort="0.007273">1%</td><td class="num" data-sort="">—</td><td data-sort="pending">?</td></tr><tr data-teams="oregon state texas tech"><td data-sort="Oregon State">Oregon State</td><td data-sort="Texas Tech">Texas Tech</td><td class="num" data-sort="">—</td><td class="num" data-sort="">—</td><td data-sort="Spread">Spread</td><td data-sort="Oregon State">Oregon State</td><td class="num" data-sort="26.500000">26.5</td><td class="num" data-sort="0.957325">96%</td><td class="num" data-sort="0.500000">50%</td><td class="num" data-sort="0.457325">46%</td><td class="num" data-sort="0.005455">1%</td><td class="num" data-sort="">—</td><td data-sort="pending">?</td></tr><tr data-teams="temple penn state"><td data-sort="Temple">Temple</td><td data-sort="Penn State">Penn State</td><td class="num" data-sort="">—</td><td class="num" data-sort="">—</td><td data-sort="Spread">Spread</td><td data-sort="Temple">Temple</td><td class="num" data-sort="24.000000">24.0</td><td class="num" data-sort="0.943788">94%</td><td class="num" data-sort="0.500000">50%</td><td class="num" data-sort="0.443788">44%</td><td class="num" data-sort="0.003636">0%</td><td class="num" data-sort="">—</td><td data-sort="pending">?</td></tr><tr data-teams="lsu louisiana tech"><td data-sort="LSU">LSU</td><td data-sort="Louisiana Tech">Louisiana Tech</td><td class="num" data-sort="">—</td><td class="num" data-sort="">—</td><td data-sort="Spread">Spread</td><td data-sort="Louisiana Tech">Louisiana Tech</td><td class="num" data-sort="36.000000">36.0</td><td class="num" data-sort="0.942445">94%</td><td class="num" data-sort="0.500000">50%</td><td class="num" data-sort="0.442445">44%</td><td class="num" data-sort="0.001818">0%</td><td class="num" data-sort="">—</td><td data-sort="pending">?</td></tr>
+</tbody>
+</table>
+</div>
+<script>
+(function () {
+  var table = document.getElementById("report-table");
+  var tbody = table.tBodies[0];
+  var headers = table.tHead.rows[0].cells;
+  var search = document.getElementById("search");
+  var conferenceFilter = document.getElementById("conference-filter");
+
+  Array.prototype.forEach.call(headers, function (th, colIndex) {
+    th.addEventListener("click", function () {
+      var dir = th.getAttribute("data-sort-dir") === "asc" ? "desc" : "asc";
+      Array.prototype.forEach.call(headers, function (h) { h.removeAttribute("data-sort-dir"); });
+      th.setAttribute("data-sort-dir", dir);
+
+      var rows = Array.prototype.slice.call(tbody.rows);
+      rows.sort(function (a, b) {
+        var av = a.cells[colIndex].getAttribute("data-sort");
+        var bv = b.cells[colIndex].getAttribute("data-sort");
+        var aEmpty = av === "", bEmpty = bv === "";
+        if (aEmpty && bEmpty) return 0;
+        if (aEmpty) return 1;   // nulls always sort last
+        if (bEmpty) return -1;
+        var an = parseFloat(av), bn = parseFloat(bv);
+        var cmp = !isNaN(an) && !isNaN(bn) ? an - bn : av.localeCompare(bv);
+        return dir === "asc" ? cmp : -cmp;
+      });
+      rows.forEach(function (row) { tbody.appendChild(row); });
+    });
+  });
+
+  function applyFilters() {
+    var needle = search.value.trim().toLowerCase();
+    var conference = conferenceFilter ? conferenceFilter.value : "";
+    Array.prototype.forEach.call(tbody.rows, function (row) {
+      var teams = row.getAttribute("data-teams") || "";
+      var matchesSearch = needle.length === 0 || teams.indexOf(needle) !== -1;
+      var matchesConference = true;
+      if (conference !== "") {
+        var conferences = (row.getAttribute("data-conference") || "").split("|");
+        matchesConference = conferences.indexOf(conference) !== -1;
+      }
+      row.hidden = !(matchesSearch && matchesConference);
+    });
+  }
+
+  search.addEventListener("input", applyFilters);
+  if (conferenceFilter) { conferenceFilter.addEventListener("change", applyFilters); }
+})();
+</script>
+<footer class="page-footer">Published 2026-09-08 08:45 CDT</footer>
+</body>
+</html>
