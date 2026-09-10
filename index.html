@@ -31,7 +31,19 @@
   }
   input#search { width: 100%; max-width: 320px; }
   select#conference-filter { max-width: 220px; }
-  .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 8px; }
+  .table-wrap {
+    overflow-x: auto; border: 1px solid var(--border); border-radius: 8px;
+    scrollbar-width: auto; scrollbar-color: var(--muted) var(--stripe);
+  }
+  /* Issue #121: a wide table (e.g. key-players.html's 28 columns) is only scrollable by trackpad
+     gesture or Shift+wheel by default -- a mouse-only user (no trackpad, e.g. on Linux) has no way to
+     reach the hidden/overlay scrollbar most browsers use. Explicit ::-webkit-scrollbar styling opts
+     Chromium/WebKit out of overlay scrollbars entirely, so a real, always-visible, click-and-drag
+     scrollbar renders instead; scrollbar-width/-color above does the same for Firefox. */
+  .table-wrap::-webkit-scrollbar { height: 12px; }
+  .table-wrap::-webkit-scrollbar-track { background: var(--stripe); }
+  .table-wrap::-webkit-scrollbar-thumb { background: var(--muted); border-radius: 6px; }
+  .table-wrap::-webkit-scrollbar-thumb:hover { background: var(--accent); }
   table { border-collapse: collapse; width: 100%; min-width: 640px; }
   th, td { padding: 8px 12px; text-align: left; white-space: nowrap; }
   td { border-top: 1px solid var(--border); }
@@ -109,6 +121,6 @@
 </tbody>
 </table>
 </div>
-<footer class="page-footer">Published 2026-09-08 08:45 CDT</footer>
+<footer class="page-footer">Published 2026-09-10 10:49 CDT</footer>
 </body>
 </html>
