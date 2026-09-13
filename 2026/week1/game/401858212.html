@@ -31,7 +31,19 @@
   }
   input#search { width: 100%; max-width: 320px; }
   select#conference-filter { max-width: 220px; }
-  .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 8px; }
+  .table-wrap {
+    overflow-x: auto; border: 1px solid var(--border); border-radius: 8px;
+    scrollbar-width: auto; scrollbar-color: var(--muted) var(--stripe);
+  }
+  /* Issue #121: a wide table (e.g. key-players.html's 28 columns) is only scrollable by trackpad
+     gesture or Shift+wheel by default -- a mouse-only user (no trackpad, e.g. on Linux) has no way to
+     reach the hidden/overlay scrollbar most browsers use. Explicit ::-webkit-scrollbar styling opts
+     Chromium/WebKit out of overlay scrollbars entirely, so a real, always-visible, click-and-drag
+     scrollbar renders instead; scrollbar-width/-color above does the same for Firefox. */
+  .table-wrap::-webkit-scrollbar { height: 12px; }
+  .table-wrap::-webkit-scrollbar-track { background: var(--stripe); }
+  .table-wrap::-webkit-scrollbar-thumb { background: var(--muted); border-radius: 6px; }
+  .table-wrap::-webkit-scrollbar-thumb:hover { background: var(--accent); }
   table { border-collapse: collapse; width: 100%; min-width: 640px; }
   th, td { padding: 8px 12px; text-align: left; white-space: nowrap; }
   td { border-top: 1px solid var(--border); }
@@ -109,6 +121,6 @@
 <td>4.9</td><td>2.5</td></tr>
 </tbody>
 </table></div><div class="box-score"><div class="box-score-teams"><img class="box-score-logo" src="https://a.espncdn.com/i/teamlogos/ncaa/500/52.png" alt="" loading="lazy"><span class="section-title" style="margin:0">Team Stats — This Game</span><img class="box-score-logo" src="https://a.espncdn.com/i/teamlogos/ncaa/500/2567.png" alt="" loading="lazy"></div><div class="box-row"><span class="box-value-home">16</span><span class="box-label">First Downs</span><span class="box-value-away">23</span></div><div class="box-row"><span class="box-value-home">2-15</span><span class="box-label">3rd Down Efficiency</span><span class="box-value-away">8-14</span></div><div class="box-row"><span class="box-value-home">2-4</span><span class="box-label">4th Down Efficiency</span><span class="box-value-away">0-0</span></div><div class="box-row"><span class="box-value-home">199</span><span class="box-label">Rushing Yards</span><span class="box-value-away">155</span></div><div class="box-row"><span class="box-value-home">125</span><span class="box-label">Passing Yards</span><span class="box-value-away">430</span></div><div class="box-row"><span class="box-value-home">324</span><span class="box-label">Total Yards</span><span class="box-value-away">585</span></div><div class="box-row"><span class="box-value-home">0 (0)</span><span class="box-label">Sacks (Yards)</span><span class="box-value-away">(0) 0</span></div><div class="box-row"><span class="box-value-home">0</span><span class="box-label">Interceptions Thrown</span><span class="box-value-away">2</span></div><div class="box-row"><span class="box-value-home">0</span><span class="box-label">Punts (Average)</span><span class="box-value-away">0</span></div><div class="box-row"><span class="box-value-home">3 (27)</span><span class="box-label">Penalties (Yards)</span><span class="box-value-away">(47) 6</span></div><div class="box-row"><span class="box-value-home">1</span><span class="box-label">Fumbles Lost</span><span class="box-value-away">2</span></div><div class="box-row"><span class="box-value-home">32:16</span><span class="box-label">Possession</span><span class="box-value-away">27:44</span></div></div>
-<footer class="page-footer">Published 2026-09-08 08:44 CDT</footer>
+<footer class="page-footer">Published 2026-09-13 09:18 CDT</footer>
 </body>
 </html>
