@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>2026 Week 7 — Top Bets</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #ffffff; --fg: #1a1a1a; --muted: #6b7280; --border: #e5e7eb;
+    --stripe: #f9fafb; --accent: #2563eb; --accent-bg: #eff6ff;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #111827; --fg: #e5e7eb; --muted: #9ca3af; --border: #374151;
+      --stripe: #1a2333; --accent: #60a5fa; --accent-bg: #1e293b;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 24px; background: var(--bg); color: var(--fg);
+    font: 15px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  h1 { font-size: 18px; margin: 0 0 4px; }
+  .caption { color: var(--muted); margin: 0 0 16px; font-size: 13px; }
+  a { color: var(--accent); }
+  .controls { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  input#search, select#conference-filter {
+    padding: 8px 10px;
+    border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--fg);
+    font-size: 14px;
+  }
+  input#search { width: 100%; max-width: 320px; }
+  select#conference-filter { max-width: 220px; }
+  .table-wrap {
+    overflow-x: auto; border: 1px solid var(--border); border-radius: 8px;
+    scrollbar-width: auto; scrollbar-color: var(--muted) var(--stripe);
+  }
+  /* Issue #121: a wide table (e.g. key-players.html's 28 columns) is only scrollable by trackpad
+     gesture or Shift+wheel by default -- a mouse-only user (no trackpad, e.g. on Linux) has no way to
+     reach the hidden/overlay scrollbar most browsers use. Explicit ::-webkit-scrollbar styling opts
+     Chromium/WebKit out of overlay scrollbars entirely, so a real, always-visible, click-and-drag
+     scrollbar renders instead; scrollbar-width/-color above does the same for Firefox. */
+  .table-wrap::-webkit-scrollbar { height: 12px; }
+  .table-wrap::-webkit-scrollbar-track { background: var(--stripe); }
+  .table-wrap::-webkit-scrollbar-thumb { background: var(--muted); border-radius: 6px; }
+  .table-wrap::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+  table { border-collapse: collapse; width: 100%; min-width: 640px; }
+  th, td { padding: 8px 12px; text-align: left; white-space: nowrap; }
+  td { border-top: 1px solid var(--border); }
+  tbody tr:nth-child(even) { background: var(--stripe); }
+  tbody tr[hidden] { display: none; }
+  th {
+    position: sticky; top: 0; background: var(--accent-bg); color: var(--accent);
+    cursor: pointer; user-select: none; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  th:hover { text-decoration: underline; }
+  th.num { text-align: right; }
+  th::after { content: ""; margin-left: 4px; opacity: 0.5; }
+  th[data-sort-dir="asc"]::after { content: "▲"; opacity: 1; }
+  th[data-sort-dir="desc"]::after { content: "▼"; opacity: 1; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .empty, .placeholder { padding: 16px; color: var(--muted); text-align: center; }
+  .placeholder { border: 1px dashed var(--border); border-radius: 8px; font-size: 14px; }
+  .page-footer { margin-top: 24px; padding-top: 12px; border-top: 1px solid var(--border); color: var(--muted); font-size: 12px; }
+  .page-nav { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-bottom: 16px; font-size: 13px; }
+  .page-nav a { text-decoration: none; }
+  .page-nav a:hover { text-decoration: underline; }
+  .chip-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px;
+  }
+  .chip {
+    display: block; border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px;
+    color: inherit; text-decoration: none; background: var(--stripe);
+  }
+  .chip:hover { border-color: var(--accent); }
+  .chip-status { color: var(--muted); font-size: 12px; margin-bottom: 8px; }
+  .chip-team { display: flex; align-items: center; gap: 8px; padding: 2px 0; }
+  .chip-team + .chip-team { border-top: 1px solid var(--border); margin-top: 6px; padding-top: 8px; }
+  .chip-logo { width: 24px; height: 24px; object-fit: contain; flex: none; }
+  .chip-name { flex: 1; font-size: 14px; }
+  .chip-rank { color: var(--muted); font-size: 12px; margin-right: 2px; }
+  .chip-record { color: var(--muted); font-size: 12px; white-space: nowrap; }
+  .chip-score { font-variant-numeric: tabular-nums; font-weight: 600; margin-left: 8px; }
+  .matchup-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 20px; }
+  .team-card { border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; background: var(--stripe); }
+  .team-card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .team-card-logo { width: 32px; height: 32px; object-fit: contain; flex: none; }
+  .team-card-name { font-size: 16px; font-weight: 700; }
+  .team-card-record { color: var(--muted); font-size: 13px; margin-left: auto; white-space: nowrap; }
+  .stat-row { display: flex; justify-content: space-between; gap: 10px; padding: 4px 0; font-size: 13px; }
+  .stat-row + .stat-row { border-top: 1px solid var(--border); }
+  .stat-label { color: var(--muted); }
+  .stat-value { font-variant-numeric: tabular-nums; font-weight: 600; text-align: right; }
+  .section-title {
+    font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); margin: 4px 0 10px;
+  }
+  .compare-table th, .compare-table td { text-align: right; }
+  .compare-table th:first-child, .compare-table td:first-child { text-align: left; }
+  .box-score { border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; margin-bottom: 20px; }
+  .box-score-teams { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .box-score-logo { width: 26px; height: 26px; object-fit: contain; }
+  .box-row {
+    display: grid; grid-template-columns: 1fr auto 1fr; gap: 10px; padding: 5px 0;
+    font-size: 13px; align-items: baseline;
+  }
+  .box-row + .box-row { border-top: 1px solid var(--border); }
+  .box-value-home { text-align: left; font-variant-numeric: tabular-nums; font-weight: 600; }
+  .box-value-away { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+  .box-label { text-align: center; color: var(--muted); white-space: nowrap; }
+</style>
+</head>
+<body>
+
+<h1>2026 Week 7 — Top Bets</h1>
+<p class="caption">Generated by Apollo — 10 bets shown, ranked by edge.</p>
+<div class="controls">
+<input id="search" type="text" placeholder="Filter by team name…">
+
+</div>
+<div class="table-wrap">
+<table id="report-table">
+<thead><tr><th data-column="home_location">Home</th><th data-column="away_location">Away</th><th class="num" data-column="home_ap_rank">Home Rank</th><th class="num" data-column="away_ap_rank">Away Rank</th><th data-column="bet_type">Bet Type</th><th data-column="pick">Pick</th><th class="num" data-column="line">Line</th><th class="num" data-column="our_prob">Blended Prob</th><th class="num" data-column="model_prob">Model Prob</th><th class="num" data-column="market_prob">Market Prob</th><th class="num" data-column="edge">Edge</th><th class="num" data-column="stake_fraction">Stake</th><th class="num" data-column="stake_dollars">Stake ($)</th><th data-column="status">Status</th></tr></thead>
+<tbody>
+<tr data-teams="texas state colorado state"><td data-sort="Texas State">Texas State</td><td data-sort="Colorado State">Colorado State</td><td class="num" data-sort="">—</td><td class="num" data-sort="">—</td><td data-sort="Total">Total</td><td data-sort="Under">Under</td><td class="num" data-sort="69.500000">69.5</td><td class="num" data-sort="0.611242">61%</td><td class="num" data-sort="0.785237">79%</td><td class="num" data-sort="0.500000">50%</td><td class="num" data-sort="0.111242">11%</td><td class="num" data-sort="0.018182">2%</td><td class="num" data-sort="">—</td><td data-sort="pending">?</td></tr><tr data-teams="boston college pittsburgh"><td data-sort="Boston College">Boston College</td><td data-sort="Pittsburgh">Pittsburgh</td><td class="num" data-sort="">—</td><td class="num" data-sort="">—</td><td data-sort="Total">Total</td><td data-sort="Over">Over</td><td class="num" data-sort="42.500000">42.5</td><td class="num" data-sort="0.607549">61%</td><td class="num" data-sort="0.775767">78%</td><td class="num" data-sort="0.500000">50%</td><td class="num" data-sort="0.107549">11%</td><td class="num" data-sort="0.016364">2%</td><td class="num" data-sort="">—</td><td data-sort="pending">?</td></tr><tr data-teams="buffalo massachusetts"><td data-sort="Buffalo">Buffalo</td><td data-sort="Massachusetts">Massachusetts</td><td class="num" data-sort="">—</td><td class="num" data-sort="">—</td><td data-sort="Total">Total</td><td data-sort="Over">Over</td><td class="num" data-sort="41.500000">41.5</td><td class="num" data-sort="0.601120">60%</td><td class="num" data-sort="0.759282">76%</td><td class="num" data-sort="0.500000">50%</td><td class="num" data-sort="0.101120">10%</td><td class="num" data-sort="0.014545">1%</td><td class="num" data-sort="">—</td><td data-sort="pending">?</td></tr><tr data-teams="baylor tcu"><td data-sort="Baylor">Baylor</td><td data-sort="TCU">TCU</td><td class="num" data-sort="">—</td><td class="num" data-sort="">—</td><td data-sort="Total">Total</td><td data-sort="Over">Over</td><td class="num" data-sort="48.500000">48.5</td><td class="num" data-sort="0.600208">60%</td><td class="num" data-sort="0.756943">76%</td><td class="num" data-sort="0.500000">50%</td><td class="num" data-sort="0.100208">10%</td><td class="num" data-sort="0.012727">1%</td><td class="num" data-sort="">—</td><td data-sort="pending">?</td></tr><tr data-teams="uab east carolina"><td data-sort="UAB">UAB</td><td data-sort="East Carolina">East Carolina</td><td class="num" data-sort="">—</td><td class="num" data-sort="">—</td><td data-sort="Total">Total</td><td data-sort="Over">Over</td><td class="num" data-sort="47.500000">47.5</td><td class="num" data-sort="0.597285">60%</td><td class="num" data-sort="0.749449">75%</td><td class="num" data-sort="0.500000">50%</td><td class="num" data-sort="0.097285">10%</td><td class="num" data-sort="0.010909">1%</td><td class="num" data-sort="">—</td><td data-sort="pending">?</td></tr><tr data-teams="air force unlv"><td data-sort="Air Force">Air Force</td><td data-sort="UNLV">UNLV</td><td class="num" data-sort="">—</td><td class="num" data-sort="">—</td><td data-sort="Total">Total</td><td data-sort="Over">Over</td><td class="num" data-sort="48.500000">48.5</td><td class="num" data-sort="0.594620">59%</td><td class="num" data-sort="0.742615">74%</td><td class="num" data-sort="0.500000">50%</td><td class="num" data-sort="0.094620">9%</td><td class="num" data-sort="0.009091">1%</td><td class="num" data-sort="">—</td><td data-sort="pending">?</td></tr><tr data-teams="west virginia cincinnati"><td data-sort="West Virginia">West Virginia</td><td data-sort="Cincinnati">Cincinnati</td><td class="num" data-sort="">—</td><td class="num" data-sort="">—</td><td data-sort="Total">Total</td><td data-sort="Under">Under</td><td class="num" data-sort="63.000000">63.0</td><td class="num" data-sort="0.588513">59%</td><td class="num" data-sort="0.726956">73%</td><td class="num" data-sort="0.500000">50%</td><td class="num" data-sort="0.088513">9%</td><td class="num" data-sort="0.007273">1%</td><td class="num" data-sort="">—</td><td data-sort="pending">?</td></tr><tr data-teams="michigan penn state"><td data-sort="Michigan">Michigan</td><td data-sort="Penn State">Penn State</td><td class="num" data-sort="">—</td><td class="num" data-sort="">—</td><td data-sort="Total">Total</td><td data-sort="Over">Over</td><td class="num" data-sort="42.500000">42.5</td><td class="num" data-sort="0.588199">59%</td><td class="num" data-sort="0.726151">73%</td><td class="num" data-sort="0.500000">50%</td><td class="num" data-sort="0.088199">9%</td><td class="num" data-sort="0.005455">1%</td><td class="num" data-sort="">—</td><td data-sort="pending">?</td></tr><tr data-teams="hawai&#x27;i new mexico"><td data-sort="Hawai&#x27;i">Hawai&#x27;i</td><td data-sort="New Mexico">New Mexico</td><td class="num" data-sort="">—</td><td class="num" data-sort="">—</td><td data-sort="Total">Total</td><td data-sort="Over">Over</td><td class="num" data-sort="44.500000">44.5</td><td class="num" data-sort="0.582347">58%</td><td class="num" data-sort="0.711146">71%</td><td class="num" data-sort="0.500000">50%</td><td class="num" data-sort="0.082347">8%</td><td class="num" data-sort="0.003636">0%</td><td class="num" data-sort="">—</td><td data-sort="pending">?</td></tr><tr data-teams="rice tulsa"><td data-sort="Rice">Rice</td><td data-sort="Tulsa">Tulsa</td><td class="num" data-sort="">—</td><td class="num" data-sort="">—</td><td data-sort="Total">Total</td><td data-sort="Over">Over</td><td class="num" data-sort="46.500000">46.5</td><td class="num" data-sort="0.581107">58%</td><td class="num" data-sort="0.707966">71%</td><td class="num" data-sort="0.500000">50%</td><td class="num" data-sort="0.081107">8%</td><td class="num" data-sort="0.001818">0%</td><td class="num" data-sort="">—</td><td data-sort="pending">?</td></tr>
+</tbody>
+</table>
+</div>
+<script>
+(function () {
+  var table = document.getElementById("report-table");
+  var tbody = table.tBodies[0];
+  var headers = table.tHead.rows[0].cells;
+  var search = document.getElementById("search");
+  var conferenceFilter = document.getElementById("conference-filter");
+
+  Array.prototype.forEach.call(headers, function (th, colIndex) {
+    th.addEventListener("click", function () {
+      var dir = th.getAttribute("data-sort-dir") === "asc" ? "desc" : "asc";
+      Array.prototype.forEach.call(headers, function (h) { h.removeAttribute("data-sort-dir"); });
+      th.setAttribute("data-sort-dir", dir);
+
+      var rows = Array.prototype.slice.call(tbody.rows);
+      rows.sort(function (a, b) {
+        var av = a.cells[colIndex].getAttribute("data-sort");
+        var bv = b.cells[colIndex].getAttribute("data-sort");
+        var aEmpty = av === "", bEmpty = bv === "";
+        if (aEmpty && bEmpty) return 0;
+        if (aEmpty) return 1;   // nulls always sort last
+        if (bEmpty) return -1;
+        var an = parseFloat(av), bn = parseFloat(bv);
+        var cmp = !isNaN(an) && !isNaN(bn) ? an - bn : av.localeCompare(bv);
+        return dir === "asc" ? cmp : -cmp;
+      });
+      rows.forEach(function (row) { tbody.appendChild(row); });
+    });
+  });
+
+  function applyFilters() {
+    var needle = search.value.trim().toLowerCase();
+    var conference = conferenceFilter ? conferenceFilter.value : "";
+    Array.prototype.forEach.call(tbody.rows, function (row) {
+      var teams = row.getAttribute("data-teams") || "";
+      var matchesSearch = needle.length === 0 || teams.indexOf(needle) !== -1;
+      var matchesConference = true;
+      if (conference !== "") {
+        var conferences = (row.getAttribute("data-conference") || "").split("|");
+        matchesConference = conferences.indexOf(conference) !== -1;
+      }
+      row.hidden = !(matchesSearch && matchesConference);
+    });
+  }
+
+  search.addEventListener("input", applyFilters);
+  if (conferenceFilter) { conferenceFilter.addEventListener("change", applyFilters); }
+})();
+</script>
+<footer class="page-footer">Published 2026-10-14 14:51 CDT</footer>
+</body>
+</html>
